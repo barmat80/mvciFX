@@ -9,7 +9,7 @@ using the MVCI framework.
 
 All credits for the original MVCI framework concept go to Dave.
 For detailed explanations and insights into the MVCI framework, please visit 
-[Dave Barrett's blog] (https://www.pragmaticcoding.ca).
+[Dave Barrett's blog](https://www.pragmaticcoding.ca).
 
 ## Some Basic MVCI Concepts
 
