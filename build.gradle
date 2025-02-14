@@ -1,0 +1,90 @@
+plugins {
+  id 'java-library'
+  id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group 'com.maemlab'
+version '0.1'
+
+repositories {
+  mavenCentral()
+}
+
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(21))
+  }
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8'
+}
+
+javadoc {
+  options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+javafx {
+  version = '23.0.1'
+  modules = [ 'javafx.controls']
+}
+
+jar {
+  manifest {
+    attributes(
+            // Basic library identification
+            'Implementation-Title': 'mvciFX',
+            'Implementation-Version': version,
+            'Implementation-Vendor': 'barmat80',
+            'Implementation-Vendor-Id': 'com.maemlab',
+            'Implementation-URL': 'https://github.com/barmat80/mvcifx',
+
+            // Specification info
+            'Specification-Title': 'mvciFX',
+            'Specification-Version': version,
+            'Specification-Vendor': 'barmat80',
+
+            // Build information
+            'Built-By': System.getProperty('user.name'),
+            'Build-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+            'Build-Jdk': "${System.properties['java.version']} (${System.properties['java.vendor']})",
+            'Build-OS': "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}",
+
+            // Additional metadata
+            'Bundle-Name': 'mvciFX',
+            'Bundle-Description': 'A lightweight library that implements MCVI framework',
+            'Bundle-DocURL': 'https://github.com/barmat80/mvcifx/wiki',
+            'Bundle-License': 'https://opensource.org/licenses/MIT', // Or your chosen license
+            'Bundle-Version': version,
+
+            // If your library uses a specific Java version
+            'Created-By': "Gradle ${gradle.gradleVersion}",
+            'Required-JDK-Version': JavaVersion.current(),
+
+            // Automatic module name for Java 9+ module system
+            'Automatic-Module-Name': 'com.maemlab.mvcifx',
+    )
+  }
+}
+
+tasks.register('copyToSuggesterFX') {
+  dependsOn build
+  doLast {
+    copy {
+      from build
+      into 'c:/workspace/intellij_projects/SuggesterFX/lib/'
+    }
+  }
+}
+
+tasks.register('copyToCommis') {
+  dependsOn build
+  doLast {
+    copy {
+      from build
+      into 'c:/workspace/intellij_projects/Commis/lib/'
+    }
+  }
+}
