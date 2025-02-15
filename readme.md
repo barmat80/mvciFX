@@ -36,7 +36,7 @@ handling all data operations and business rules.
 
 This library provides the following components:
 
-- **`Controller`**: 
+- **`Controller`**: an interface that instantiates and coordinates interactions between Interactor, Model and View.
 - **`Interactor`**: an interface that defines the business logic layer in the MVCI framework. 
 It defines three common methods that need to be implemented: `getView`, `lookup` and `load`
 - **`Model`**: an abstract class which provides properties for tracking error states and requested operations 
