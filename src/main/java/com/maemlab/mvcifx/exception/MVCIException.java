@@ -4,7 +4,7 @@ import com.maemlab.mvcifx.mvci.Interactor;
 
 /**
  * Abstract implementation of the {@code Exception} class.
- * This exception is thrown by {@link Interactor#fetchData()}  and {@link Interactor#fetchNames(String)}.
+ * This exception is thrown by {@link Interactor#fetchData()}.
  *
  * <p>Users of Interactor interface can override constructors for custom behavior.
  *

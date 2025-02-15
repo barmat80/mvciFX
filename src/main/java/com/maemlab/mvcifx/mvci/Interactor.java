@@ -2,8 +2,6 @@ package com.maemlab.mvcifx.mvci;
 
 import com.maemlab.mvcifx.exception.MVCIException;
 
-import java.util.Collection;
-
 /**
  * The {@code Interactor} interface defines the business logic layer in the MVCI framework.
  * It acts as a mediator between the Controller and data sources, handling all data operations
@@ -21,16 +19,6 @@ public interface Interactor {
      * @throws MVCIException if data retrieval fails
      */
     void fetchData() throws MVCIException;
-
-    /**
-     * Retrieves a list of names matching a user's suggestion or partial input
-     * This method is typically used for implementing auto-complete or search suggestion features.
-     *
-     * @param suggest a partial string input used to filter name suggestion
-     * @return a collection of names matching the suggestion criteria
-     * @throws MVCIException if data retrieval fails
-     */
-    Collection<String> fetchNames(String suggest) throws MVCIException;
 
     /**
      * Updates the underlying model after a standard data fetch operation.
