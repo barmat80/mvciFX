@@ -51,6 +51,8 @@ an implementation for operations such deletions, savings and quitting.
 
 ## Examples
 
+TODO
+
 Here are some examples of how to use the mvciFX library in your JavaFX applications:
 
 ### Example 1: Basic Setup
@@ -72,8 +74,6 @@ Here are some examples of how to use the mvciFX library in your JavaFX applicati
 ```
 
 ## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Contributing
 
