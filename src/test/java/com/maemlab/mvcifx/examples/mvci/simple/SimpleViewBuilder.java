@@ -9,11 +9,10 @@ import javafx.scene.layout.VBox;
 import java.util.function.Consumer;
 
 public class SimpleViewBuilder extends ViewBuilder<SimpleModel> {
-    private final SimpleModel model;
     private final Consumer<Runnable> lookupAction;
 
     public SimpleViewBuilder(SimpleModel model, Consumer<Runnable> lookupAction) {
-        this.model = model;
+        super(model);
         this.lookupAction = lookupAction;
     }
 
