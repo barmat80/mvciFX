@@ -1,5 +1,6 @@
 package com.maemlab.mvcifx.mvci.statetracking;
 
+import com.maemlab.mvcifx.mvci.Model;
 import com.maemlab.mvcifx.mvci.ViewBuilder;
 import javafx.scene.layout.Region;
 
@@ -13,13 +14,21 @@ import javafx.scene.layout.Region;
  *   <li>Use it directly and implement only the helper methods and build()</li>
  *   <li>Override setupModelListeners() for custom behavior</li>
  * </ul>
+ *
+ * @param <M> The type of StateTrackingModel this controller manages
+ *
  * @see ViewBuilder
  * @see StateTrackingModel
  */
 public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingModel> extends ViewBuilder<M> {
 
+    /**
+     * Creates a new ViewBuilder instance with the specified {@link StateTrackingModel} type.
+     *
+     * @param model The {@link Model} instance
+     */
     public StateTrackingAbstractViewBuilder(M model) {
-        this.model = model;  // Set the inherited protected field
+        super(model);// Set the inherited protected field
     }
 
     /**
