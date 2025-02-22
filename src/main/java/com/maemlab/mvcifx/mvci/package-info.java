@@ -4,10 +4,10 @@
  * <p>This package contains the fundamental interfaces and classes that establish
  * the MVCI framework for JavaFX applications. The framework separates concerns into:
  * <ul>
- *   <li>Model: Holds application state and data
- *   <li>View: Defines the user interface structure (via ViewBuilder)
- *   <li>Controller: Coordinates interactions between components
- *   <li>Interactor: Handles business logic and data operations
+ *   <li>{@link com.maemlab.mvcifx.mvci.Model}: Holds application state and data
+ *   <li>{@link com.maemlab.mvcifx.mvci.ViewBuilder}: Defines the user interface structure (via ViewBuilder)
+ *   <li>{@link com.maemlab.mvcifx.mvci.Controller}: Coordinates interactions between components
+ *   <li>{@link com.maemlab.mvcifx.mvci.Interactor}: Handles business logic and data operations
  * </ul>
  *
  * <p>For a deeper explanation of the MVCI framework and how it works,
