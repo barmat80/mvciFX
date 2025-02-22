@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.maemlab'
-version '0.2'
+version '0.5'
 
 repositories {
   mavenCentral()
@@ -66,25 +66,5 @@ jar {
             // Automatic module name for Java 9+ module system
             'Automatic-Module-Name': 'com.maemlab.mvcifx',
     )
-  }
-}
-
-tasks.register('copyToSuggesterFX') {
-  dependsOn build
-  doLast {
-    copy {
-      from build
-      into 'c:/workspace/intellij_projects/SuggesterFX/lib/'
-    }
-  }
-}
-
-tasks.register('copyToCommis') {
-  dependsOn build
-  doLast {
-    copy {
-      from build
-      into 'c:/workspace/intellij_projects/Commis/lib/'
-    }
   }
 }
