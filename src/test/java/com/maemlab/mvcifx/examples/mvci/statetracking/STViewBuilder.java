@@ -10,6 +10,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -73,7 +74,7 @@ public class STViewBuilder extends StateTrackingAbstractViewBuilder<STModel> {
     }
 
     @Override
-    public void handleError(Throwable error) {
+    public void handleError(Window parentWindow, Throwable error) {
         Alert a = new Alert(Alert.AlertType.ERROR);
         a.setHeaderText("Error");
         a.setContentText(error.getMessage());
@@ -81,7 +82,7 @@ public class STViewBuilder extends StateTrackingAbstractViewBuilder<STModel> {
     }
 
     @Override
-    public boolean handleDeleteRequest() {
+    public boolean handleDeleteRequest(Window parentWindow) {
         Alert a = new Alert(Alert.AlertType.CONFIRMATION);
         a.setHeaderText("Delete");
         a.setContentText("Do you want to delete " + model.getDescription() + "? (Click Yes to receive an Error Message)");
@@ -90,7 +91,7 @@ public class STViewBuilder extends StateTrackingAbstractViewBuilder<STModel> {
     }
 
     @Override
-    public boolean handleSaveRequest() {
+    public boolean handleSaveRequest(Window parentWindow) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setHeaderText("Save");
         a.setContentText("You're saving " + model.getDescription());
@@ -99,7 +100,7 @@ public class STViewBuilder extends StateTrackingAbstractViewBuilder<STModel> {
     }
 
     @Override
-    public boolean handleQuitRequest() {
+    public boolean handleQuitRequest(Window parentWindow) {
         Alert a = new Alert(Alert.AlertType.WARNING);
         a.setHeaderText("Quit");
         a.setContentText("Quit?");
