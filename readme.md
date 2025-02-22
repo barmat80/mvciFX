@@ -46,16 +46,16 @@ This library provides the following components:
 
 #### Specialized Controller interfaces
 
-- `DataSourceController`: defines asynchronous data retrieval capabilities.
-- `ParameterizedController`: enables controller initialization using constructor parameters. 
-- `DualInitController`: combines both data source interaction and parameter-based initialization capabilities.
+- `DataSourceController`: an interface that defines asynchronous data retrieval capabilities.
+- `ParameterizedController`: an interface that enables controller initialization using constructor parameters. 
+- `DualInitController`: an interface that combines both data source interaction and parameter-based initialization capabilities.
 
 #### State-tracking implementation
 
 This implementation provides built-in functionalities for tracking error states and requested operations made by the user, 
 such as deletions, saving and quitting.
 
-- `StateTrackingModel`: an implementation of the `Model` interface that implements state tracking management through 
+- `StateTrackingModel`: a `Model` that implements state tracking management through 
 observable properties, that automatically reflect application state changes.
 - `StateTrackingAbstractViewBuilder`: an abstract `ViewBuilder` with automated state observation.
 - `StateTrackingDataSourceAbstractController`: an abstract `Controller` for data source operations with state tracking capabilities.
