@@ -30,7 +30,4 @@ public class SimpleViewBuilder extends ViewBuilder<SimpleModel> {
         vbox.getChildren().add(table);
         return vbox;
     }
-
-    @Override
-    protected void setupModelListeners(Region root) {}
 }

@@ -24,6 +24,7 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
 
     /**
      * Sets up model listeners for the specified root region.
+     * <p>This method should be called from the build() method implementation to establish necessary bindings and listeners for model properties.
      * <p><b>Implementation note</b>: This method waits for the scene and the window to be available, setting the listener for the root element
      *
      * <pre>root.sceneProperty().addListener((obs, oldScene, newScene) -> {
@@ -39,7 +40,6 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
      *
      * @param root The root Region of the view hierarchy
      */
-    @Override
     protected void setupModelListeners(Region root) {
         root.sceneProperty().addListener((obsScene, oldScene, newScene) ->{
             if (newScene != null) {// Error handling
