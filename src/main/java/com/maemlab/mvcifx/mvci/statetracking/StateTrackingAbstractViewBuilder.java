@@ -112,7 +112,14 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
      *       {@link #handleQuitRequest(Window)} is called and the result is stored in
      *       {@code quitConfirmedProperty}</li>
      * </ul>
-     *
+     * <p>Save handling includes automatic window closing behavior:
+     * <ul>
+     *   <li>If {@code model.closeAfterSaveProperty()} is true and the save operation is successful
+     *       (returns true from {@link #handleSaveRequest}), the window will automatically close</li>
+     *   <li>The window remains open if the save operation fails or if {@code closeAfterSaveProperty}
+     *       is false</li>
+     *   <li>Window closing occurs after the model's save-related properties are updated</li>
+     * </ul>
      * <p>The method automatically resets request flags after handling them to prevent repeated triggers.
      * All handlers are called on the JavaFX Application Thread as they involve UI operations.
      *
@@ -146,6 +153,11 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
                                 var success = handleSaveRequest(newWindow);
                                 model.setSaveDone(success);
                                 model.setSaveRequested(false);
+
+                                // Close window if save was successful and closeAfterSave is true
+                                if (success && model.isCloseAfterSave()) {
+                                    newWindow.hide();
+                                }
                             }
                         });
 
