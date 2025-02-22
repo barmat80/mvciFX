@@ -7,7 +7,7 @@ using the MVCI framework.
 
 ## Credits
 
-All credits for the original MVCI framework concept go to Dave.
+All credits for the original MVCI framework concept go to Dave Barrett.
 For detailed explanations and insights into the MVCI framework, please visit 
 [Dave Barrett's blog](https://www.pragmaticcoding.ca).
 
@@ -36,44 +36,40 @@ handling all data operations and business rules.
 
 This library provides the following components:
 
-- **`Controller`**: an interface that instantiates and coordinates interactions between Interactor, Model and View.
-- **`Interactor`**: an interface that defines the business logic layer in the MVCI framework. 
-It defines three common methods that need to be implemented: `getView`, `lookup` and `load`
-- **`Model`**: an abstract class which provides properties for tracking error states and requested operations 
-made by the user, such as deletions, savings and quitting
-- **`ViewBuilder`**: an abstract class that implements `Builder<Region>` provide built-in support for model listener 
-setup and property binding
-- **`AbstractController`**: A base class for controllers, providing common functionality, such as the constructor 
-receiving Model, Interactor and ViewBuilder and the `getView` method
-- **`DefaultViewBuilder`**: a utility for building views with a `setupModelListeners` method that provides 
-an implementation for operations such deletions, savings and quitting.
-- **Custom Exception**: `MVCIException`, an abstract exception class for handling specific errors in the framework.
+#### Core
+
+- `Controller`: an interface that instantiates and coordinates interactions between Interactor, Model and View within the MVCI framework.
+- `Interactor`: an interface that defines the business logic layer within the MVCI framework. 
+- `Model`: an interface that is responsible for representing the data and state within the MVCI framework.
+- `ViewBuilder`: an abstract class for building JavaFX UI components with model observation support.
+- `MVCIException`: an abstract exception class for handling specific errors in the framework.
+
+#### Specialized Controller interfaces
+
+- `DataSourceController`: defines asynchronous data retrieval capabilities.
+- `ParameterizedController`: enables controller initialization using constructor parameters. 
+- `DualInitController`: combines both data source interaction and parameter-based initialization capabilities.
+
+#### State-tracking implementation
+
+This implementation provides built-in functionalities for tracking error states and requested operations made by the user, 
+such as deletions, saving and quitting.
+
+- `StateTrackingModel`: an implementation of the `Model` interface that implements state tracking management through 
+observable properties, that automatically reflect application state changes.
+- `StateTrackingAbstractViewBuilder`: an abstract `ViewBuilder` with automated state observation.
+- `StateTrackingDataSourceAbstractController`: an abstract `Controller` for data source operations with state tracking capabilities.
+- `StateTrackingParameterizedAbstractController`: an abstract `Controller` for parameterized initialization with state tracking capabilities.
 
 ## Examples
 
-TODO
-
-Here are some examples of how to use the mvciFX library in your JavaFX applications:
-
-### Example 1: Basic Setup
-
-```java
-// Your example code here
-```
-
-### Example 2: Custom Controller
-
-```java
-// Your example code here
-```
-
-### Example 3: Using DefaultViewBuilder
-
-```java
-// Your example code here
-```
+You can find some examples of how to use the library in `test` directory.
+Two scenarios are provided:
+- Simple: the Controller is an implementation of `DataSourceController`, while the other classes implement/extend core components.
+- StateTracking: it's an overall implementation of State Tracking capabilities.
 
 ## License
+
 
 ## Contributing
 
