@@ -41,7 +41,7 @@ This library provides the following components:
 - `Controller`: an interface that instantiates and coordinates interactions between Interactor, Model and View within the MVCI framework.
 - `Interactor`: an interface that defines the business logic layer within the MVCI framework. 
 - `Model`: an interface that is responsible for representing the data and state within the MVCI framework.
-- `ViewBuilder`: an abstract class for building JavaFX UI components with model observation support.
+- `ViewBuilder`: an abstract class for building JavaFX UI components.
 - `MVCIException`: an abstract exception class for handling specific errors in the framework.
 
 #### Specialized Controller interfaces
