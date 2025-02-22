@@ -18,6 +18,23 @@ public class StateTrackingModel implements Model {
     private final ObjectProperty<Boolean> deleteConfirmed = new SimpleObjectProperty<>(false);
     private final ObjectProperty<Boolean> saveRequested = new SimpleObjectProperty<>(false);
     private final ObjectProperty<Boolean> saveDone = new SimpleObjectProperty<>(false);
+
+    /**
+     * A property that controls whether the window should automatically close after a successful save operation.
+     * This property is particularly useful for modal dialogs, forms, or child MVCI components that should
+     * close themselves upon successful completion.
+     *
+     * <p>When this property is set to true:
+     * <ul>
+     *   <li>The window will automatically close after a successful save operation</li>
+     *   <li>The window will remain open if the save operation fails</li>
+     *   <li>The window closing occurs after all save-related properties are updated</li>
+     * </ul>
+     *
+     * <p>This property should typically be configured in the Controller rather than the ViewBuilder
+     * to maintain proper separation of concerns and allow for dynamic behavior changes.
+     */
+    private final ObjectProperty<Boolean> closeAfterSave = new SimpleObjectProperty<>(false);
     private final ObjectProperty<Boolean> quitRequested = new SimpleObjectProperty<>(false);
     private final ObjectProperty<Boolean> quitConfirmed = new SimpleObjectProperty<>(false);
 
@@ -103,5 +120,22 @@ public class StateTrackingModel implements Model {
 
     public void setQuitConfirmed(boolean b) {
         quitConfirmed.set(b);
+    }
+
+    /**
+     * Gets the property indicating whether the window should be closed after a successful save.
+     * This is particularly useful for popup windows or child MVCI components.
+     * @return a BooleanProperty controlling post-save window behavior
+     */
+    public ObjectProperty<Boolean> closeAfterSaveProperty() {
+        return closeAfterSave;
+    }
+
+    public void setCloseAfterSave(boolean close) {
+        closeAfterSave.set(close);
+    }
+
+    public boolean isCloseAfterSave() {
+        return closeAfterSave.get();
     }
 }
