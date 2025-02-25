@@ -1,6 +1,5 @@
 package com.maemlab.mvcifx.mvci.statetracking;
 
-import com.maemlab.mvcifx.mvci.Model;
 import com.maemlab.mvcifx.mvci.ViewBuilder;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
@@ -13,10 +12,12 @@ import javafx.util.Builder;
  *
  * <p>The builder automatically sets up window-level listeners for the following {@link StateTrackingModel} properties:
  * <ul>
- *   <li>{@code errorProperty} - Triggers error handling when an exception or error occurs</li>
- *   <li>{@code deleteRequestedProperty} - Manages delete confirmation dialogs and updates {@code deleteConfirmedProperty}</li>
- *   <li>{@code saveRequestedProperty} - Handles save operations and updates {@code saveDoneProperty}</li>
- *   <li>{@code quitRequestedProperty} - Manages application exit confirmation and updates {@code quitConfirmedProperty}</li>
+ *   <li>{@code error} - Triggers error handling when an exception or error occurs</li>
+ *   <li>{@code deleteRequested} - Manages delete confirmation dialogs and updates {@code deleteConfirmed}</li>
+ *   <li>{@code saveRequested} - Handles save operations and updates {@code saveDone}</li>
+ *   <li>{@code quitRequested} - Manages application exit confirmation and updates {@code quitConfirmed}</li>
+ *   <li>{@code performActionAfterDeletion} - Controls whether an action should be executed after successful deletion</li>
+ *   <li>{@code performActionAfterSave} - Controls whether an action should be executed after successful save</li>
  * </ul>
  *
  * <p>This builder is designed to work with window-level dialogs and alerts, automatically waiting for the scene
@@ -35,6 +36,8 @@ import javafx.util.Builder;
  *   </li>
  *   <li>Implement the {@link Builder#build()} method to create your view hierarchy</li>
  *   <li>Call {@link #setupModelListeners(Region)} in your build method to enable state tracking</li>
+ *   <li>When using post-operation actions, set appropriate callbacks using {@link #setOnSaveConfirmed(Runnable)}
+ *       or {@link #setOnDeleteConfirmed(Runnable)}</li>
  * </ol>
  *
  * <p>Example implementation:
@@ -42,6 +45,8 @@ import javafx.util.Builder;
  * public class CustomViewBuilder extends StateTrackingAbstractViewBuilder<CustomModel> {
  *     public CustomViewBuilder(CustomModel model) {
  *         super(model);
+ *         // Set up post-operation callbacks if needed
+ *           setOnSaveConfirmed(() -> { // do something });
  *     }
  *
  *     @Override
@@ -76,21 +81,61 @@ import javafx.util.Builder;
  *
  * @see ViewBuilder
  * @see StateTrackingModel
- * @see Model
  * @see javafx.stage.Window
  * @see javafx.scene.layout.Region
  */
 public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingModel> extends ViewBuilder<M> {
+    protected Runnable onSaveConfirmed;
+    protected Runnable onDeleteConfirmed;
 
     /**
      * Creates a new ViewBuilder instance with the specified {@link StateTrackingModel}.
      * The provided model will be used to track application state and trigger UI updates.
      *
-     * @param model The {@link Model} instance to track. Must not be null.
+     * @param model The {@link StateTrackingModel} instance to track. Must not be null.
      * @throws IllegalArgumentException if the model is null
      */
     public StateTrackingAbstractViewBuilder(M model) {
         super(model);// Set the inherited protected field
+    }
+
+    /**
+     * Setups the action that should be taken after a successful save completion.
+     * <p>This callback will be executed automatically when all of these conditions are met:
+     * <ul>
+     *   <li>{@code model.saveRequestedProperty()} is set to true</li>
+     *   <li>{@link #handleSaveRequest(Window)} returns true</li>
+     *   <li>{@code model.isPerformActionAfterSave()} is set to true</li>
+     * </ul>
+     * <p>If {@code model.isPerformActionAfterSave()} is true but this callback is not set,
+     * an {@link IllegalStateException} will be thrown when a save request is processed.
+     * <p>This method should typically be called during the ViewBuilder's initialization
+     * (typically in Controller constructor) when post-save actions are required.
+     * @param callback the callback that will be called after successful save
+     * @see StateTrackingModel#isPerformActionAfterSave()
+     */
+    public void setOnSaveConfirmed(Runnable callback) {
+        this.onSaveConfirmed = callback;
+    }
+
+    /**
+     * Setups the action that should be taken after a successful deletion completion.
+     * <p>This callback will be executed automatically when all of these conditions are met:
+     * <ul>
+     *   <li>{@code model.deleteRequestedProperty()} is set to true</li>
+     *   <li>{@link #handleDeleteRequest(Window)} returns true</li>
+     *   <li>{@code model.isPerformActionAfterDeletion()} is set to true</li>
+     * </ul>
+     * <p>If {@code model.isPerformActionAfterDeletion()} is true but this callback is not set,
+     * an {@link IllegalStateException} will be thrown when a delete request is processed.
+     * <p>This method should typically be called during the ViewBuilder's initialization
+     * (typically in Controller constructor) when post-deletion actions are required.
+     *
+     * @param callback the callback that will be called after successful deletion
+     * @see StateTrackingModel#isPerformActionAfterDeletion()
+     */
+    public void setOnDeleteConfirmed(Runnable callback) {
+        this.onDeleteConfirmed = callback;
     }
 
     /**
@@ -104,27 +149,32 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
      *       {@link #handleError(Window, Throwable)} is called and the error is automatically cleared</li>
      *   <li>Delete confirmation: When {@code model.deleteRequestedProperty()} becomes true,
      *       {@link #handleDeleteRequest(Window)} is called and the result is stored in
-     *       {@code deleteConfirmedProperty}</li>
+     *       {@code deleteConfirmed}</li>
      *   <li>Save handling: When {@code model.saveRequestedProperty()} becomes true,
      *       {@link #handleSaveRequest(Window)} is called and the result is stored in
-     *       {@code saveDoneProperty}</li>
+     *       {@code saveDone}</li>
      *   <li>Quit confirmation: When {@code model.quitRequestedProperty()} becomes true,
      *       {@link #handleQuitRequest(Window)} is called and the result is stored in
-     *       {@code quitConfirmedProperty}</li>
+     *       {@code quitConfirmed}</li>
      * </ul>
-     * <p>Save handling includes automatic window closing behavior:
+     *
+     * <p>Post-operation action handling:
      * <ul>
-     *   <li>If {@code model.closeAfterSaveProperty()} is true and the save operation is successful
-     *       (returns true from {@link #handleSaveRequest}), the window will automatically close</li>
-     *   <li>The window remains open if the save operation fails or if {@code closeAfterSaveProperty}
-     *       is false</li>
-     *   <li>Window closing occurs after the model's save-related properties are updated</li>
+     *   <li>If {@code model.isPerformActionAfterDeletion()} is true and the delete operation is successful
+     *       (returns true from handleDeleteRequest), the action defined by {@link #setOnDeleteConfirmed(Runnable)}
+     *       will automatically run</li>
+     *   <li>If {@code model.isPerformActionAfterSave()} is true and the save operation is successful
+     *       (returns true from handleSaveRequest), the action defined by {@link #setOnSaveConfirmed(Runnable)}
+     *       will automatically run</li>
+     *   <li>An {@link IllegalStateException} is thrown if {@code model.isPerformActionAfterDeletion()} or
+     *       {@code model.isPerformActionAfterSave()} is true but the corresponding callback is not set</li>
      * </ul>
      * <p>The method automatically resets request flags after handling them to prevent repeated triggers.
      * All handlers are called on the JavaFX Application Thread as they involve UI operations.
      *
      * @param root The root node of the view hierarchy. Must not be null.
      * @throws IllegalArgumentException if root is null
+     * @throws IllegalStateException if a post-operation action is requested but no callback is set
      */
     protected void setupModelListeners(Region root) {
         root.sceneProperty().addListener((obsScene, oldScene, newScene) ->{
@@ -142,21 +192,35 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
                         model.deleteRequestedProperty().addListener((obs, oldVal, requesting) -> {
                             if (requesting) {
                                 var confirmed = handleDeleteRequest(newWindow);
+                                if (confirmed) {
+                                    if (model.isPerformActionAfterDeletion() && onDeleteConfirmed == null) {
+                                        throw new IllegalStateException(
+                                                "Action after deletion was requested but no callback was set. Call setOnDeleteConfirmed first.");
+                                    }
+                                    if (model.isPerformActionAfterDeletion()) {
+                                        onDeleteConfirmed.run();
+                                    }
+                                }
                                 model.setDeleteConfirmed(confirmed);
                                 model.setDeleteRequested(false);
                             }
                         });
 
                         // Save request handling
-                        model.getSaveRequestedProperty().addListener((obs, oldVal, saveDone) -> {
-                            if (saveDone) {
+                        model.saveRequestedProperty().addListener((obs, oldVal, saveRequested) -> {
+                            if (saveRequested) {
                                 var success = handleSaveRequest(newWindow);
                                 model.setSaveDone(success);
                                 model.setSaveRequested(false);
 
-                                // Close window if save was successful and closeAfterSave is true
-                                if (success && model.isCloseAfterSave()) {
-                                    newWindow.hide();
+                                if (success) {
+                                    if (model.isPerformActionAfterSave() && onSaveConfirmed == null) {
+                                        throw new IllegalStateException(
+                                                "Action after save was requested but no callback was set. Call setOnSaveConfirmed first.");
+                                    }
+                                    if (model.isPerformActionAfterSave()) {
+                                        onSaveConfirmed.run();
+                                    }
                                 }
                             }
                         });
@@ -177,7 +241,7 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
 
     /**
      * Handles errors reported by the model. This method is called automatically when the model's
-     * {@code errorProperty} changes to a non-null value. The error will be automatically cleared
+     * {@code error} changes to a non-null value. The error will be automatically cleared
      * after this method returns.
      *
      * <p>Implementations should display or log the error appropriately, typically using a dialog
@@ -191,8 +255,8 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
 
     /**
      * Handles delete confirmation requests from the model. This method is called automatically
-     * when the model's {@code deleteRequestedProperty} becomes true. The result is stored in
-     * the model's {@code deleteConfirmedProperty}.
+     * when the model's {@code deleteRequested} becomes true. The result is stored in
+     * the model's {@code deleteConfirmed}.
      *
      * <p>Implementations should prompt the user for confirmation, typically using a confirmation
      * dialog. Since this method is called on the JavaFX Application Thread, it's safe to show
@@ -205,8 +269,8 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
 
     /**
      * Handles save requests from the model. This method is called automatically when the model's
-     * {@code saveRequestedProperty} becomes true. The result is stored in the model's
-     * {@code saveDoneProperty}.
+     * {@code saveRequested} becomes true. The result is stored in the model's
+     * {@code saveDone}.
      *
      * <p>Implementations should perform the save operation and optionally show progress or
      * completion dialogs. Since this method is called on the JavaFX Application Thread,
@@ -219,8 +283,8 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
 
     /**
      * Handles quit requests from the model. This method is called automatically when the model's
-     * {@code quitRequestedProperty} becomes true. The result is stored in the model's
-     * {@code quitConfirmedProperty}.
+     * {@code quitRequested} becomes true. The result is stored in the model's
+     * {@code quitConfirmed}.
      *
      * <p>Implementations should prompt for confirmation if there are unsaved changes and perform
      * any necessary cleanup. Since this method is called on the JavaFX Application Thread,

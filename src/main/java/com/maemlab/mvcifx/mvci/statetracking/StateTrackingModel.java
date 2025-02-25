@@ -1,7 +1,9 @@
 package com.maemlab.mvcifx.mvci.statetracking;
 
 import com.maemlab.mvcifx.mvci.Model;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
@@ -14,29 +16,34 @@ import javafx.beans.property.SimpleObjectProperty;
  */
 public class StateTrackingModel implements Model {
     private final ObjectProperty<Throwable> error = new SimpleObjectProperty<>();
-    private final ObjectProperty<Boolean> deleteRequested = new SimpleObjectProperty<>(false);
-    private final ObjectProperty<Boolean> deleteConfirmed = new SimpleObjectProperty<>(false);
-    private final ObjectProperty<Boolean> saveRequested = new SimpleObjectProperty<>(false);
-    private final ObjectProperty<Boolean> saveDone = new SimpleObjectProperty<>(false);
+    private final BooleanProperty deleteRequested = new SimpleBooleanProperty(false);
+    private final BooleanProperty deleteConfirmed = new SimpleBooleanProperty(false);
+    private final BooleanProperty saveRequested = new SimpleBooleanProperty(false);
+    private final BooleanProperty saveDone = new SimpleBooleanProperty(false);
+    private final BooleanProperty quitRequested = new SimpleBooleanProperty(false);
+    private final BooleanProperty quitConfirmed = new SimpleBooleanProperty(false);
 
     /**
-     * A property that controls whether the window should automatically close after a successful save operation.
+     * A property that controls whether an action should be taken after a successful deletion operation.
      * This property is particularly useful for modal dialogs, forms, or child MVCI components that should
-     * close themselves upon successful completion.
-     *
-     * <p>When this property is set to true:
-     * <ul>
-     *   <li>The window will automatically close after a successful save operation</li>
-     *   <li>The window will remain open if the save operation fails</li>
-     *   <li>The window closing occurs after all save-related properties are updated</li>
-     * </ul>
-     *
+     * take an action upon successful completion.
+     * <p>When this property is set to true, an action must be defined through {@link StateTrackingAbstractViewBuilder#setOnDeleteConfirmed},
+     * otherwise an {@link IllegalStateException} will be thrown.
      * <p>This property should typically be configured in the Controller rather than the ViewBuilder
      * to maintain proper separation of concerns and allow for dynamic behavior changes.
      */
-    private final ObjectProperty<Boolean> closeAfterSave = new SimpleObjectProperty<>(false);
-    private final ObjectProperty<Boolean> quitRequested = new SimpleObjectProperty<>(false);
-    private final ObjectProperty<Boolean> quitConfirmed = new SimpleObjectProperty<>(false);
+    private final BooleanProperty performActionAfterDeletion = new SimpleBooleanProperty(false);
+
+    /**
+     * A property that controls whether an action should be taken after a successful save operation.
+     * This property is particularly useful for modal dialogs, forms, or child MVCI components that should
+     * take an action upon successful completion.
+     * <p>When this property is set to true, an action must be defined through {@link StateTrackingAbstractViewBuilder#setOnSaveConfirmed},
+     * otherwise an {@link IllegalStateException} will be thrown.
+     * <p>This property should typically be configured in the Controller rather than the ViewBuilder
+     * to maintain proper separation of concerns and allow for dynamic behavior changes.
+     */
+    private final BooleanProperty performActionAfterSave = new SimpleBooleanProperty(false);
 
     /**
      * Gets the property tracking error states in the application.
@@ -54,7 +61,7 @@ public class StateTrackingModel implements Model {
      * Gets the property indicating whether a delete operation has been requested.
      * @return a BooleanProperty tracking delete request state
      */
-    public ObjectProperty<Boolean> deleteRequestedProperty() {
+    public BooleanProperty deleteRequestedProperty() {
         return deleteRequested;
     }
 
@@ -66,7 +73,7 @@ public class StateTrackingModel implements Model {
      * Gets the property indicating whether a delete operation has been completed.
      * @return a BooleanProperty tracking delete confirmation state
      */
-    public ObjectProperty<Boolean> deleteConfirmedProperty() {
+    public BooleanProperty deleteConfirmedProperty() {
         return deleteConfirmed;
     }
 
@@ -78,7 +85,7 @@ public class StateTrackingModel implements Model {
      * Gets the property indicating whether a save operation has been requested.
      * @return a BooleanProperty tracking save request state
      */
-    public ObjectProperty<Boolean> getSaveRequestedProperty() {
+    public BooleanProperty saveRequestedProperty() {
         return saveRequested;
     }
 
@@ -90,7 +97,7 @@ public class StateTrackingModel implements Model {
      * Gets the property indicating whether a save operation has been completed.
      * @return a BooleanProperty tracking save completion state
      */
-    public ObjectProperty<Boolean> saveDoneProperty() {
+    public BooleanProperty saveDoneProperty() {
         return saveDone;
     }
 
@@ -102,7 +109,7 @@ public class StateTrackingModel implements Model {
      * Gets the property indicating whether a quit operation has been requested.
      * @return a BooleanProperty tracking quit request state
      */
-    public ObjectProperty<Boolean> quitRequestedProperty() {
+    public BooleanProperty quitRequestedProperty() {
         return quitRequested;
     }
 
@@ -114,7 +121,7 @@ public class StateTrackingModel implements Model {
      * Gets the property indicating whether a quit operation has been completed.
      * @return a BooleanProperty tracking quit confirmation state
      */
-    public ObjectProperty<Boolean> quitConfirmedProperty() {
+    public BooleanProperty quitConfirmedProperty() {
         return quitConfirmed;
     }
 
@@ -122,20 +129,27 @@ public class StateTrackingModel implements Model {
         quitConfirmed.set(b);
     }
 
-    /**
-     * Gets the property indicating whether the window should be closed after a successful save.
-     * This is particularly useful for popup windows or child MVCI components.
-     * @return a BooleanProperty controlling post-save window behavior
-     */
-    public ObjectProperty<Boolean> closeAfterSaveProperty() {
-        return closeAfterSave;
+    public BooleanProperty performActionAfterDeletionProperty() {
+        return performActionAfterDeletion;
     }
 
-    public void setCloseAfterSave(boolean close) {
-        closeAfterSave.set(close);
+    public boolean isPerformActionAfterDeletion() {
+        return performActionAfterDeletion.get();
     }
 
-    public boolean isCloseAfterSave() {
-        return closeAfterSave.get();
+    public void setPerformActionAfterDeletion(boolean b) {
+        performActionAfterDeletion.set(b);
+    }
+
+    public BooleanProperty performActionAfterSaveProperty() {
+        return performActionAfterSave;
+    }
+
+    public void setPerformActionAfterSave(boolean b) {
+        performActionAfterSave.set(b);
+    }
+
+    public boolean isPerformActionAfterSave() {
+        return performActionAfterSave.get();
     }
 }
