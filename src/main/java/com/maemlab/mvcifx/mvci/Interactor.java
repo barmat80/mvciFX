@@ -9,10 +9,12 @@ import com.maemlab.mvcifx.exception.MVCIException;
  * <p>For a deeper explanation of the MCVI framework and how it works,
  * please see <a href="https://www.pragmaticcoding.ca/javafx/elements/mvci-quick">PragmaticCoding.ca: JavaFX: Quick Guide to MVCI</a></p>
  *
+ * @param <M> The type of Model associated with this interactor, must extend the base {@link Model} class
+ *
  * @see Controller
  * @see Model
  */
-public interface Interactor {
+public interface Interactor<M extends Model> {
     /**
      * Retrieves all available data without any specific filtering.
      *
