@@ -91,6 +91,11 @@ public class STViewBuilder extends StateTrackingAbstractViewBuilder<STModel> {
     }
 
     @Override
+    public void handleDeleteConfirmation(Window parentWindow) {
+
+    }
+
+    @Override
     public boolean handleSaveRequest(Window parentWindow) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setHeaderText("Save");
@@ -100,12 +105,22 @@ public class STViewBuilder extends StateTrackingAbstractViewBuilder<STModel> {
     }
 
     @Override
+    public void handleSaveCompletion(Window parentWindow) {
+
+    }
+
+    @Override
     public boolean handleQuitRequest(Window parentWindow) {
         Alert a = new Alert(Alert.AlertType.WARNING);
         a.setHeaderText("Quit");
         a.setContentText("Quit?");
         a.show();
         return false;
+    }
+
+    @Override
+    public void handleQuitConfirmation(Window parentWindow) {
+
     }
 
 

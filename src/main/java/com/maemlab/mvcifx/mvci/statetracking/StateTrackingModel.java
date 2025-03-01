@@ -19,7 +19,7 @@ public class StateTrackingModel implements Model {
     private final BooleanProperty deleteRequested = new SimpleBooleanProperty(false);
     private final BooleanProperty deleteConfirmed = new SimpleBooleanProperty(false);
     private final BooleanProperty saveRequested = new SimpleBooleanProperty(false);
-    private final BooleanProperty saveDone = new SimpleBooleanProperty(false);
+    private final BooleanProperty saveComplete = new SimpleBooleanProperty(false);
     private final BooleanProperty quitRequested = new SimpleBooleanProperty(false);
     private final BooleanProperty quitConfirmed = new SimpleBooleanProperty(false);
 
@@ -44,6 +44,17 @@ public class StateTrackingModel implements Model {
      * to maintain proper separation of concerns and allow for dynamic behavior changes.
      */
     private final BooleanProperty performActionAfterSave = new SimpleBooleanProperty(false);
+
+    /**
+     * A property that controls whether an action should be taken after the user confirms exit from editing mode.
+     * This property is particularly useful for modal dialogs, forms, or child MVCI components that should
+     * take an action upon successful completion.
+     * <p>When this property is set to true, an action must be defined through {@link StateTrackingAbstractViewBuilder#setOnQuitConfirmed},
+     * otherwise an {@link IllegalStateException} will be thrown.
+     * <p>This property should typically be configured in the Controller rather than the ViewBuilder
+     * to maintain proper separation of concerns and allow for dynamic behavior changes.
+     */
+    private final BooleanProperty performActionAfterQuit = new SimpleBooleanProperty(false);
 
     /**
      * Gets the property tracking error states in the application.
@@ -97,12 +108,12 @@ public class StateTrackingModel implements Model {
      * Gets the property indicating whether a save operation has been completed.
      * @return a BooleanProperty tracking save completion state
      */
-    public BooleanProperty saveDoneProperty() {
-        return saveDone;
+    public BooleanProperty saveCompleteProperty() {
+        return saveComplete;
     }
 
-    public void setSaveDone(boolean b) {
-        saveDone.set(b);
+    public void setSaveComplete(boolean b) {
+        saveComplete.set(b);
     }
 
     /**
@@ -151,5 +162,17 @@ public class StateTrackingModel implements Model {
 
     public boolean isPerformActionAfterSave() {
         return performActionAfterSave.get();
+    }
+
+    public BooleanProperty performActionAfterQuitProperty() {
+        return performActionAfterQuit;
+    }
+
+    public void setPerformActionAfterQuit(boolean b) {
+        performActionAfterQuit.set(b);
+    }
+
+    public boolean isPerformActionAfterQuit() {
+        return performActionAfterQuit.get();
     }
 }

@@ -14,10 +14,11 @@ import javafx.util.Builder;
  * <ul>
  *   <li>{@code error} - Triggers error handling when an exception or error occurs</li>
  *   <li>{@code deleteRequested} - Manages delete confirmation dialogs and updates {@code deleteConfirmed}</li>
- *   <li>{@code saveRequested} - Handles save operations and updates {@code saveDone}</li>
+ *   <li>{@code saveRequested} - Handles save operations and updates {@code saveComplete}</li>
  *   <li>{@code quitRequested} - Manages application exit confirmation and updates {@code quitConfirmed}</li>
  *   <li>{@code performActionAfterDeletion} - Controls whether an action should be executed after successful deletion</li>
  *   <li>{@code performActionAfterSave} - Controls whether an action should be executed after successful save</li>
+ *   <li>{@code performActionAfterQuit} - Controls whether an action should be executed after successful quit</li>
  * </ul>
  *
  * <p>This builder is designed to work with window-level dialogs and alerts, automatically waiting for the scene
@@ -36,8 +37,8 @@ import javafx.util.Builder;
  *   </li>
  *   <li>Implement the {@link Builder#build()} method to create your view hierarchy</li>
  *   <li>Call {@link #setupModelListeners(Region)} in your build method to enable state tracking</li>
- *   <li>When using post-operation actions, set appropriate callbacks using {@link #setOnSaveConfirmed(Runnable)}
- *       or {@link #setOnDeleteConfirmed(Runnable)}</li>
+ *   <li>When using post-operation actions, set appropriate callbacks using {@link #setOnSaveConfirmed(Runnable)},
+ *        {@link #setOnDeleteConfirmed(Runnable)} or {@link #setOnQuitConfirmed(Runnable)}</li>
  * </ol>
  *
  * <p>Example implementation:
@@ -87,6 +88,7 @@ import javafx.util.Builder;
 public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingModel> extends ViewBuilder<M> {
     protected Runnable onSaveConfirmed;
     protected Runnable onDeleteConfirmed;
+    protected Runnable onQuitConfirmed;
 
     /**
      * Creates a new ViewBuilder instance with the specified {@link StateTrackingModel}.
@@ -139,6 +141,26 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
     }
 
     /**
+     * Setups the action that should be taken after the user confirms exit from editing mode.
+     * <p>This callback will be executed automatically when all of these conditions are met:
+     * <ul>
+     *   <li>{@code model.quitRequestedProperty()} is set to true</li>
+     *   <li>{@link #handleQuitRequest(Window)} returns true</li>
+     *   <li>{@code model.isPerformActionAfterQuit()} is set to true</li>
+     * </ul>
+     * <p>If {@code model.isPerformActionAfterQuit()} is true but this callback is not set,
+     * an {@link IllegalStateException} will be thrown when a delete request is processed.
+     * <p>This method should typically be called during the ViewBuilder's initialization
+     * (typically in Controller constructor) when post-exit actions are required.
+     *
+     * @param callback the callback that will be called after confirmed exit
+     * @see StateTrackingModel#isPerformActionAfterQuit()
+     */
+    public void setOnQuitConfirmed(Runnable callback) {
+        this.onQuitConfirmed = callback;
+    }
+
+    /**
      * Sets up window-level state tracking listeners for the specified root region.
      * <p>This method must be called from the {@link #build()} method implementation after creating the root node but before returning it.
      * <p>The method establishes a chain of listeners that wait for the scene and window to be available
@@ -149,13 +171,13 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
      *       {@link #handleError(Window, Throwable)} is called and the error is automatically cleared</li>
      *   <li>Delete confirmation: When {@code model.deleteRequestedProperty()} becomes true,
      *       {@link #handleDeleteRequest(Window)} is called and the result is stored in
-     *       {@code deleteConfirmed}</li>
+     *       {@code deleteConfirmed}. When {@code deleteConfirmed} becomes true, {@link #handleDeleteConfirmation(Window)} is called.</li>
      *   <li>Save handling: When {@code model.saveRequestedProperty()} becomes true,
      *       {@link #handleSaveRequest(Window)} is called and the result is stored in
-     *       {@code saveDone}</li>
+     *       {@code saveComplete} When {@code saveComplete} becomes true, {@link #handleSaveCompletion(Window)} is called.</li>
      *   <li>Quit confirmation: When {@code model.quitRequestedProperty()} becomes true,
      *       {@link #handleQuitRequest(Window)} is called and the result is stored in
-     *       {@code quitConfirmed}</li>
+     *       {@code quitConfirmed} When {@code quitConfirmed} becomes true, {@link #handleQuitConfirmation(Window)} is called</li>
      * </ul>
      *
      * <p>Post-operation action handling:
@@ -166,8 +188,11 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
      *   <li>If {@code model.isPerformActionAfterSave()} is true and the save operation is successful
      *       (returns true from handleSaveRequest), the action defined by {@link #setOnSaveConfirmed(Runnable)}
      *       will automatically run</li>
-     *   <li>An {@link IllegalStateException} is thrown if {@code model.isPerformActionAfterDeletion()} or
-     *       {@code model.isPerformActionAfterSave()} is true but the corresponding callback is not set</li>
+     *   <li>If {@code model.isPerformActionAfterQuit()} is true and the exit operation is confirmed
+     *       (returns true from handleQuitRequest), the action defined by {@link #setOnQuitConfirmed(Runnable)}
+     *       will automatically run</li>
+     *   <li>An {@link IllegalStateException} is thrown if {@code model.isPerformActionAfterDeletion()},
+     *       {@code model.isPerformActionAfterSave()} or {@code model.isPerformActionAfterSave()} is true but the corresponding callback is not set</li>
      * </ul>
      * <p>The method automatically resets request flags after handling them to prevent repeated triggers.
      * All handlers are called on the JavaFX Application Thread as they involve UI operations.
@@ -206,13 +231,16 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
                             }
                         });
 
+                        model.deleteConfirmedProperty().addListener((obs, oldVal, confirmed) -> {
+                            if(confirmed) {
+                                handleDeleteConfirmation(newWindow);
+                            }
+                        });
+
                         // Save request handling
                         model.saveRequestedProperty().addListener((obs, oldVal, saveRequested) -> {
                             if (saveRequested) {
                                 var success = handleSaveRequest(newWindow);
-                                model.setSaveDone(success);
-                                model.setSaveRequested(false);
-
                                 if (success) {
                                     if (model.isPerformActionAfterSave() && onSaveConfirmed == null) {
                                         throw new IllegalStateException(
@@ -222,6 +250,15 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
                                         onSaveConfirmed.run();
                                     }
                                 }
+                                model.setSaveComplete(success);
+                                model.setSaveRequested(false);
+                            }
+                        });
+
+                        // Save complete handling
+                        model.saveCompleteProperty().addListener((obs, oldVal, complete) -> {
+                            if (complete) {
+                                handleSaveCompletion(newWindow);
                             }
                         });
 
@@ -229,8 +266,24 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
                         model.quitRequestedProperty().addListener((obs, oldVal, requesting) -> {
                             if (requesting) {
                                 var confirmed = handleQuitRequest(newWindow);
+                                if (confirmed) {
+                                    if (model.isPerformActionAfterQuit() && onQuitConfirmed == null) {
+                                        throw new IllegalStateException(
+                                                "Action after quit was requested but no callback was set. Call setOnQuitConfirmed first.");
+                                    }
+                                    if (model.isPerformActionAfterQuit()) {
+                                        onQuitConfirmed.run();
+                                    }
+                                }
                                 model.setQuitConfirmed(confirmed);
                                 model.setQuitRequested(false);
+                            }
+                        });
+
+                        // Quit confirmed handling
+                        model.quitConfirmedProperty().addListener((obs, oldVal, confirmed) -> {
+                            if (confirmed) {
+                                handleQuitConfirmation(newWindow);
                             }
                         });
                     }
@@ -268,9 +321,20 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
     public abstract boolean handleDeleteRequest(Window parentWindow);
 
     /**
+     * Handles actions after delete confirmation. This method is called automatically when the model's
+     * {@code deleteConfirmed} becomes true, typically after a successful deletion operation.
+     *
+     * <p>Implementations can perform additional UI updates, show success messages, or execute
+     * follow-up tasks. This method is called on the JavaFX Application Thread.
+     *
+     * @param parentWindow The window that should parent any dialogs shown. Never null.
+     */
+    public abstract void handleDeleteConfirmation(Window parentWindow);
+
+    /**
      * Handles save requests from the model. This method is called automatically when the model's
      * {@code saveRequested} becomes true. The result is stored in the model's
-     * {@code saveDone}.
+     * {@code saveComplete}.
      *
      * <p>Implementations should perform the save operation and optionally show progress or
      * completion dialogs. Since this method is called on the JavaFX Application Thread,
@@ -280,6 +344,17 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
      * @return true if the save operation was successful, false otherwise
      */
     public abstract boolean handleSaveRequest(Window parentWindow);
+
+    /**
+     * Handles actions after a successful save operation. This method is called automatically when the model's
+     * {@code saveComplete} becomes true, typically after a successful save.
+     *
+     * <p>Implementations can perform UI updates, show success messages, refresh data,
+     * or execute follow-up tasks. This method is called on the JavaFX Application Thread.
+     *
+     * @param parentWindow The window that should parent any dialogs shown. Never null.
+     */
+    public abstract void handleSaveCompletion(Window parentWindow);
 
     /**
      * Handles quit requests from the model. This method is called automatically when the model's
@@ -294,4 +369,15 @@ public abstract class StateTrackingAbstractViewBuilder<M extends StateTrackingMo
      * @return true if the application should quit, false to cancel
      */
     public abstract boolean handleQuitRequest(Window parentWindow);
+
+    /**
+     * Handles actions after a quit operation is confirmed. This method is called automatically when the model's
+     * {@code quitConfirmed} becomes true, typically after the user has confirmed the application should exit.
+     *
+     * <p>Implementations should perform final cleanup operations or application shutdown tasks.
+     * This method is called on the JavaFX Application Thread.
+     *
+     * @param parentWindow The window that should parent any dialogs shown. Never null.
+     */
+    public abstract void handleQuitConfirmation(Window parentWindow);
 }

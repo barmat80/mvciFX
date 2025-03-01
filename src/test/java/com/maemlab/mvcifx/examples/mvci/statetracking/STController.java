@@ -25,7 +25,7 @@ public class STController extends CommonController<STModel, STInteractor, STView
             }
         });
 
-        this.model.saveDoneProperty().addListener((obs, old, saveDone) -> {
+        this.model.saveCompleteProperty().addListener((obs, old, saveDone) -> {
             if (saveDone) {
                 handleSave();
             }
@@ -67,7 +67,7 @@ public class STController extends CommonController<STModel, STInteractor, STView
     private void handleSave() {
         //interactor.save();
         model.setError(new RuntimeException("ERROR"));
-        model.setSaveDone(false);
+        model.setSaveComplete(false);
     }
 
     private void quit() {
