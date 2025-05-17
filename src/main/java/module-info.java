@@ -1,4 +1,4 @@
-module com.maemlab.mvcifx {
+module mvciFX {
     requires javafx.controls;
 
     exports com.maemlab.mvcifx.mvci;
